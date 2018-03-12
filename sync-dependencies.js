@@ -2,6 +2,7 @@
 const childProcess = require('child_process');
 const fs = require('fs');
 const npa = require('npm-package-arg');
+const path = require('path');
 const process = require('process');
 const request = require('request');
 const yargs = require('yargs');
@@ -42,6 +43,7 @@ const targetPackageJson = JSON.parse(fs.readFileSync(argv.target, 'utf8'));
 
 let sourcePackageJsonPromise;
 if (argv.from) {
+    console.log('Syncing from ' + argv.from);
     sourcePackageJsonPromise = Promise.resolve(JSON.parse(fs.readFileSync(argv.from, 'utf8')));
 } else {
     const dependencyVersion = (targetPackageJson.dependencies || {})[argv.source];
@@ -54,15 +56,20 @@ if (argv.from) {
 
     const resolvedPackage = npa.resolve(argv.source, sourcePackageVersion);
     if (resolvedPackage.type === 'directory') {
-        sourcePackageJsonPromise = Promise.resolve(JSON.parse(fs.readFileSync(path.join(argv.source, sourcePackageVersion))));
+        const fullPath = path.join(sourcePackageVersion, 'package.json');
+        console.log('Syncing from ' + fullPath);
+        sourcePackageJsonPromise = Promise.resolve(JSON.parse(fs.readFileSync(fullPath, 'utf8')));
     } else if (resolvedPackage.type === 'tag' || resolvedPackage.type === 'version' || resolvedPackage.type === 'range') {
+        const npmPackage = argv.source + '@' + sourcePackageVersion;
+        console.log('Sync from npm package ' + npmPackage);
         const npmViewResult = childProcess.spawnSync('npm', [
             'view', '--json',
-            argv.source + '@' + sourcePackageVersion
+            npmPackage
         ], { shell: true });
         sourcePackageJsonPromise = Promise.resolve(JSON.parse(npmViewResult.stdout.toString()));
     } else if (resolvedPackage.type === 'git' && resolvedPackage.hosted) {
         const packageJsonUrl = resolvedPackage.hosted.file('package.json');
+        console.log('Syncing from ' + packageJsonUrl);
         sourcePackageJsonPromise = new Promise((resolve, reject) => {
             request(packageJsonUrl, (error, response, body) => {
                 if (error) {
