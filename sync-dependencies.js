@@ -102,17 +102,13 @@ sourcePackageJsonPromise.then(sourcePackageJson => {
     }
 });
 
-function syncDependencies(dependencies, targetJson, justWarn) {
+function syncDependencies(dependencies, targetJson) {
     for (var dependency in dependencies) {
         if (dependencies.hasOwnProperty(dependency)) {
             var version = targetJson.dependencies[dependency] || targetJson.devDependencies[dependency];
             if (version && version !== dependencies[dependency]) {
-                if (justWarn) {
-                    console.warn('Warning: There is a version mismatch for ' + dependency + '. This build may fail or hang. You should run `gulp sync-terriajs-dependencies`, then re-run `npm install`, then run gulp again.');
-                } else {
-                    console.log('Updating ' + dependency + ' from ' + dependencies[dependency] + ' to ' + version + '.');
-                    dependencies[dependency] = version;
-                }
+                console.log('Updating ' + dependency + ' from ' + dependencies[dependency] + ' to ' + version + '.');
+                dependencies[dependency] = version;
             }
         }
     }
