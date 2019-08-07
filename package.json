@@ -1,6 +1,6 @@
 {
   "name": "sync-dependencies",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Updates dependency versions in one package.json to match another.",
   "repository": {
     "type": "git",
