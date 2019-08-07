@@ -69,7 +69,7 @@ if (argv.from) {
         ], { shell: true });
         sourcePackageJsonPromise = Promise.resolve(JSON.parse(npmViewResult.stdout.toString()));
     } else if (resolvedPackage.type === 'git' && resolvedPackage.hosted) {
-        const packageJsonUrl = resolvedPackage.hosted.file('package.json');
+        const packageJsonUrl = resolvedPackage.hosted.file('package.json', {noCommittish: false});
         console.log('Syncing from ' + packageJsonUrl);
         sourcePackageJsonPromise = new Promise((resolve, reject) => {
             request(packageJsonUrl, (error, response, body) => {
