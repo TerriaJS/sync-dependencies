@@ -5,7 +5,7 @@ const fs = require('fs');
 const npa = require('npm-package-arg');
 const path = require('path');
 const process = require('process');
-const request = require('request');
+const got = require('got');
 const yargs = require('yargs');
 
 const argv = yargs.options({
@@ -72,13 +72,13 @@ if (argv.from) {
         const packageJsonUrl = resolvedPackage.hosted.file('package.json', {noCommittish: false});
         console.log('Syncing from ' + packageJsonUrl);
         sourcePackageJsonPromise = new Promise((resolve, reject) => {
-            request(packageJsonUrl, (error, response, body) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(JSON.parse(body));
-                }
-            });
+            got(packageJsonUrl)
+            .then(response => {
+                resolve(JSON.parse(response.body));
+            })
+            .catch(error => {
+                reject(error);
+            })
         });
     } else {
         console.error(`Sorry, I don't know how to retrieve package.json for a package of type ${resolvedPackage.type} (${sourcePackageVersion}).`);
